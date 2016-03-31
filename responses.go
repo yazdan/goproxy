@@ -3,6 +3,7 @@ package goproxy
 import (
 	"bytes"
 	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -24,6 +25,20 @@ func NewResponse(r *http.Request, contentType string, status int, body string) *
 	buf := bytes.NewBufferString(body)
 	resp.ContentLength = int64(buf.Len())
 	resp.Body = ioutil.NopCloser(buf)
+	return resp
+}
+
+
+func NewResponseReader(r *http.Request, contentType string, status int, body io.ReadCloser, bodySz int64) *http.Response {
+	resp := &http.Response{}
+	resp.Request = r
+	resp.TransferEncoding = r.TransferEncoding
+	resp.Header = make(http.Header)
+	resp.Header.Add("Content-Type", contentType)
+	resp.StatusCode = status
+	
+	resp.ContentLength = bodySz
+	resp.Body = body
 	return resp
 }
 
